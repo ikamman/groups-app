@@ -1,6 +1,6 @@
 package com.example.groupsapp.user
 
-import akka.actor.{Actor, ActorLogging, Props}
+import akka.actor.{Actor, ActorLogging}
 import com.example.groupsapp.group.Group.Message
 
 object User {

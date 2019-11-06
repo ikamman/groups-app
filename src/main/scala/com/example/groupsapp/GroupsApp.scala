@@ -1,8 +1,8 @@
 package com.example.groupsapp
 
-import akka.actor.{ActorSystem, Props}
-import com.example.groupsapp.user.UserSharding
+import akka.actor.ActorSystem
 import com.example.groupsapp.group.GroupSharding
+import com.example.groupsapp.user.UserSharding
 import com.typesafe.config.ConfigFactory
 
 object GroupsApp {

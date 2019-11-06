@@ -1,9 +1,6 @@
 package com.example.groupsapp.group
 
-import java.time.LocalDateTime
-import java.util.{Calendar, Date}
-
-import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.cluster.pubsub.DistributedPubSub
 import akka.cluster.pubsub.DistributedPubSubMediator.Publish
 import com.example.groupsapp.user.User.AddGroup
