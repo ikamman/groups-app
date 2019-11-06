@@ -2,18 +2,21 @@ package com.example.groupsapp
 
 import akka.actor.ActorSystem
 import com.example.groupsapp.group.GroupSharding
-import com.example.groupsapp.user.UserSharding
 import com.example.groupsapp.web.WebApp
 import com.typesafe.config.ConfigFactory
 
 object GroupsApp {
 
   def main(args: Array[String]): Unit = {
-    if (args.isEmpty)
-      startup(Seq("2551", "2552", "0"))
-    else
-      startup(args)
+    if (args.isEmpty) {
+      nodesStartup(Seq("2551", "2552", "0"))
+    } else {
+      nodesStartup(args)
+    }
+    webServerStartup()
+  }
 
+  def webServerStartup(): Unit = {
     val config = ConfigFactory
       .parseString("akka.cluster.roles=[\"web\"]")
       .withFallback(ConfigFactory.load())
@@ -21,18 +24,17 @@ object GroupsApp {
     WebApp.startServer("127.0.0.1", 8080, system)
   }
 
-  def startup(ports: Seq[String]): Unit = {
+  def nodesStartup(ports: Seq[String]): Unit = {
     ports foreach { port =>
       val config = ConfigFactory
         .parseString("akka.remote.artery.canonical.port=" + port)
         .withFallback(
-          ConfigFactory.parseString("akka.cluster.roles=[\"group,user\"]")
+          ConfigFactory.parseString("akka.cluster.roles=[\"group\"]")
         )
         .withFallback(ConfigFactory.load())
-
       val system = ActorSystem("GroupsSystem", config)
-      val userSharding = system.actorOf(UserSharding.props)
-      system.actorOf(GroupSharding.props(userSharding))
+
+      system.actorOf(GroupSharding.props)
     }
   }
 }

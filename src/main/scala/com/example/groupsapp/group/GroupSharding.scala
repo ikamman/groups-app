@@ -5,10 +5,10 @@ import akka.cluster.sharding._
 import com.example.groupsapp.group.Group.GroupCommand
 
 object GroupSharding {
-  def props(user: ActorRef): Props = Props(new GroupSharding(user))
+  def props: Props = Props(new GroupSharding)
 }
 
-class GroupSharding(user: ActorRef) extends Actor with ActorLogging {
+class GroupSharding extends Actor with ActorLogging {
 
   private val extractEntityId: ShardRegion.ExtractEntityId = {
     case msg: GroupCommand => (msg.groupId.toString, msg)
@@ -22,7 +22,7 @@ class GroupSharding(user: ActorRef) extends Actor with ActorLogging {
 
   val groupRegion: ActorRef = ClusterSharding(context.system).start(
     typeName = "Group",
-    entityProps = Props(new Group(user, LogGroupFeedRepository)),
+    entityProps = Props(new Group(LogFeedRepository, LogSubscriptionRepository)),
     settings = ClusterShardingSettings(context.system).withRole("group"),
     extractEntityId = extractEntityId,
     extractShardId = extractShardId

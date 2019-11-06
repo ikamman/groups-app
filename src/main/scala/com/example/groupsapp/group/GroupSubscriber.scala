@@ -1,4 +1,4 @@
-package com.example.groupsapp.user
+package com.example.groupsapp.group
 
 import akka.actor.ActorContext
 import akka.cluster.pubsub.DistributedPubSub

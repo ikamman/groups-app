@@ -1,14 +1,15 @@
 import com.typesafe.sbt.SbtMultiJvm.multiJvmSettings
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys.MultiJvm
 
-val akkaVersion = "2.5.26"
+val akkaVersion     = "2.5.26"
 val akkaHttpVersion = "10.1.10"
+val monocleVersion  = "2.0.0"
 
 lazy val `groups-app` = project
   .in(file("."))
   .settings(multiJvmSettings: _*)
   .settings(
-    organization := "com.typesafe.akka.samples",
+    organization := "com.example.groupsapp",
     scalaVersion := "2.12.8",
     scalacOptions in Compile ++= Seq(
       "-deprecation",
@@ -24,17 +25,19 @@ lazy val `groups-app` = project
       "-Djava.library.path=./target/native"
     ),
     libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-actor" % akkaVersion,
-      "com.typesafe.akka" %% "akka-remote" % akkaVersion,
-      "com.typesafe.akka" %% "akka-cluster" % akkaVersion,
-      "com.typesafe.akka" %% "akka-cluster-metrics" % akkaVersion,
-      "com.typesafe.akka" %% "akka-cluster-tools" % akkaVersion,
-      "com.typesafe.akka" %% "akka-cluster-sharding" % akkaVersion,
-      "com.typesafe.akka" %% "akka-multi-node-testkit" % akkaVersion,
-      "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
-      "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
-      "org.scalatest" %% "scalatest" % "3.0.7" % Test,
-      "io.kamon" % "sigar-loader" % "1.6.6-rev002"
+      "com.typesafe.akka"          %% "akka-actor"              % akkaVersion,
+      "com.typesafe.akka"          %% "akka-remote"             % akkaVersion,
+      "com.typesafe.akka"          %% "akka-cluster"            % akkaVersion,
+      "com.typesafe.akka"          %% "akka-cluster-metrics"    % akkaVersion,
+      "com.typesafe.akka"          %% "akka-cluster-tools"      % akkaVersion,
+      "com.typesafe.akka"          %% "akka-cluster-sharding"   % akkaVersion,
+      "com.typesafe.akka"          %% "akka-multi-node-testkit" % akkaVersion,
+      "com.typesafe.akka"          %% "akka-http"               % akkaHttpVersion,
+      "com.github.julien-truffaut" %% "monocle-core"            % monocleVersion,
+      "com.github.julien-truffaut" %% "monocle-macro"           % monocleVersion,
+      "com.typesafe.scala-logging" %% "scala-logging"           % "3.9.2",
+      "org.scalatest"              %% "scalatest"               % "3.0.7" % Test,
+      "io.kamon"                   % "sigar-loader"             % "1.6.6-rev002"
     ),
     fork in run := true,
     mainClass in (Compile, run) := Some("com.example.groupsapp.GroupsApp"),

@@ -5,11 +5,11 @@ import com.typesafe.scalalogging.LazyLogging
 
 import scala.concurrent.Future
 
-trait GroupFeedRepository {
+trait FeedRepository {
   def save(msg: Message): Future[Unit]
 }
 
-object LogGroupFeedRepository extends GroupFeedRepository with LazyLogging {
+object LogFeedRepository extends FeedRepository with LazyLogging {
   override def save(msg: Message): Future[Unit] =
     Future.successful(logger.info(s"Saving message: $msg"))
 }
