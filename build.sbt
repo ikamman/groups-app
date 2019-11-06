@@ -2,6 +2,7 @@ import com.typesafe.sbt.SbtMultiJvm.multiJvmSettings
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys.MultiJvm
 
 val akkaVersion = "2.5.26"
+val akkaHttpVersion = "10.1.10"
 
 lazy val `groups-app` = project
   .in(file("."))
@@ -30,6 +31,7 @@ lazy val `groups-app` = project
       "com.typesafe.akka" %% "akka-cluster-tools" % akkaVersion,
       "com.typesafe.akka" %% "akka-cluster-sharding" % akkaVersion,
       "com.typesafe.akka" %% "akka-multi-node-testkit" % akkaVersion,
+      "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
       "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
       "org.scalatest" %% "scalatest" % "3.0.7" % Test,
       "io.kamon" % "sigar-loader" % "1.6.6-rev002"

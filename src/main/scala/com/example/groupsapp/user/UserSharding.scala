@@ -24,7 +24,7 @@ class UserSharding extends Actor with ActorLogging {
   val groupRegion: ActorRef = ClusterSharding(context.system).start(
     typeName = "User",
     entityProps = Props[User],
-    settings = ClusterShardingSettings(context.system),
+    settings = ClusterShardingSettings(context.system).withRole("user"),
     extractEntityId = extractEntityId,
     extractShardId = extractShardId
   )
