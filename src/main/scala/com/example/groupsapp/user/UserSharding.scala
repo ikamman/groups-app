@@ -2,13 +2,14 @@ package com.example.groupsapp.user
 
 import akka.actor._
 import akka.cluster.sharding._
-import com.example.groupsapp.user.User._
 
-object UserShard {
-  def props: Props = Props[UserShard]
+object UserSharding {
+  def props: Props = Props[UserSharding]
 }
 
-class UserShard extends Actor with ActorLogging {
+class UserSharding extends Actor with ActorLogging {
+
+  import User._
 
   private val extractEntityId: ShardRegion.ExtractEntityId = {
     case msg: UserCommand => (msg.userId.toString, msg)
@@ -20,7 +21,7 @@ class UserShard extends Actor with ActorLogging {
     case cmd: UserCommand => (cmd.userId % numberOfShards).toString
   }
 
-  val deviceRegion: ActorRef = ClusterSharding(context.system).start(
+  val groupRegion: ActorRef = ClusterSharding(context.system).start(
     typeName = "User",
     entityProps = Props[User],
     settings = ClusterShardingSettings(context.system),
@@ -31,6 +32,6 @@ class UserShard extends Actor with ActorLogging {
   def receive = {
     case msg: UserCommand =>
       log.info(s"Sending $msg");
-      deviceRegion ! msg
+      groupRegion ! msg
   }
 }
