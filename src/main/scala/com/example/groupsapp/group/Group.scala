@@ -1,6 +1,5 @@
 package com.example.groupsapp.group
 
-import akka.Done
 import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.cluster.pubsub.DistributedPubSub
 import akka.cluster.pubsub.DistributedPubSubMediator.Publish
@@ -8,8 +7,7 @@ import monocle.macros.syntax.lens._
 
 object Group {
 
-  case class Message(id: String, groupId: Int, userId: Int, userName: String, msg: String, create: Long)
-
+  case class Message(id: String, groupId: Int, userId: Int, userName: String, message: String, created: Long)
   case class Subscription(groupId: Int, userId: Int, userName: String)
 
   // Commands
@@ -35,11 +33,12 @@ class Group(feedRepo: FeedRepository, subsRepo: SubscriptionRepository) extends 
   override def receive: Receive = active(GroupState())
 
   def active(state: GroupState): Receive = {
-    case JoinGroup(_, userId, userName) =>
+    case JoinGroup(groupId, userId, userName) =>
       if (isMember(userId, state)) {
         sender() ! NotSoGood("User is already a member of this group")
       } else {
         val newState = state.lens(_.members).modify(_ + (userId -> userName))
+        subsRepo.save(Subscription(groupId, userId, userName))
         sender() ! AllGood
         context.become(active(newState))
       }

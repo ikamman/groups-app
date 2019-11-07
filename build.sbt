@@ -38,7 +38,9 @@ lazy val `groups-app` = project
       "com.github.julien-truffaut" %% "monocle-macro"           % monocleVersion,
       "com.typesafe.scala-logging" %% "scala-logging"           % "3.9.2",
       "org.scalatest"              %% "scalatest"               % "3.0.7" % Test,
-      "io.kamon"                   % "sigar-loader"             % "1.6.6-rev002"
+      "io.kamon"                   % "sigar-loader"             % "1.6.6-rev002",
+      "com.h2database"             % "h2"                       % "1.4.199",
+      "io.getquill"                %% "quill-jdbc"              % "3.4.10",
     ),
     fork in run := true,
     mainClass in (Compile, run) := Some("com.example.groupsapp.GroupsApp"),

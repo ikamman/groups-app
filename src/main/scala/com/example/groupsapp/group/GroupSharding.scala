@@ -21,11 +21,12 @@ object GroupSharding {
     case msg @ PostMessage(id, _, _) => (id.toString, msg)
   }
 
-  def start(subsRepo: SubscriptionRepository)(implicit system: ActorSystem): ActorRef = ClusterSharding(system).start(
-    typeName = "Group",
-    entityProps = Props(new Group(LogFeedRepository, subsRepo)),
-    settings = ClusterShardingSettings(system).withRole("group"),
-    extractEntityId = extractEntityId,
-    extractShardId = extractShardId
-  )
+  def start(feedRepo: FeedRepository, subsRepo: SubscriptionRepository)(implicit system: ActorSystem): ActorRef =
+    ClusterSharding(system).start(
+      typeName = "Group",
+      entityProps = Props(new Group(feedRepo, subsRepo)),
+      settings = ClusterShardingSettings(system).withRole("group"),
+      extractEntityId = extractEntityId,
+      extractShardId = extractShardId
+    )
 }

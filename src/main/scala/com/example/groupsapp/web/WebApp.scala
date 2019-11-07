@@ -2,20 +2,26 @@ package com.example.groupsapp.web
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import akka.http.scaladsl.model.HttpHeader.ParsingResult.Ok
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.{HttpApp, Route}
-import com.example.groupsapp.group.Group.{AllGood, NotSoGood, Reply}
-import com.example.groupsapp.group.{GroupService, LogSubscriptionRepositoryProvider}
+import com.example.groupsapp.group.Group.{AllGood, Message, NotSoGood, Reply, Subscription}
+import com.example.groupsapp.group.{DefaultFeedRepositoryProvider, DefaultSubscriptionRepositoryProvider, GroupService}
 import spray.json._
 
-class WebApp(val system: ActorSystem) extends HttpApp with GroupService with LogSubscriptionRepositoryProvider {
+class WebApp(val system: ActorSystem)
+    extends HttpApp
+    with GroupService
+    with DefaultSubscriptionRepositoryProvider
+    with DefaultFeedRepositoryProvider {
 
   case class JoinRequest(userName: String)
   case class PostRequest(msg: String)
+
   object GroupJsonProtocol extends DefaultJsonProtocol with SprayJsonSupport {
     implicit val joinReqFormats: RootJsonFormat[JoinRequest] = jsonFormat1(JoinRequest)
     implicit val postReqFormats: RootJsonFormat[PostRequest] = jsonFormat1(PostRequest)
+    implicit val subsFormats: RootJsonFormat[Subscription]   = jsonFormat3(Subscription)
+    implicit val feedFormats: RootJsonFormat[Message]        = jsonFormat6(Message)
   }
 
   import GroupJsonProtocol._
@@ -24,7 +30,7 @@ class WebApp(val system: ActorSystem) extends HttpApp with GroupService with Log
     pathPrefix("user" / IntNumber) { userId =>
       path("groups") {
         get {
-          complete(s"Getting groups: $userId")
+          complete(getUserSubs(userId))
         }
       } ~
         path("join" / IntNumber) { groupId =>
@@ -45,11 +51,11 @@ class WebApp(val system: ActorSystem) extends HttpApp with GroupService with Log
         } ~
         path("feeds") {
           get {
-            complete(s"Getting all feeds")
+            complete(getLast20PostsAllFeeds(userId))
           }
         } ~
         path("feed" / IntNumber) { groupId =>
-          complete(s"Getting all feeds")
+          complete(getLast20Posts(userId, groupId))
         }
     }
 
