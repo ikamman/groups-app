@@ -7,9 +7,21 @@ import scala.concurrent.Future
 
 trait SubscriptionRepository {
   def save(sub: Subscription): Future[Unit]
+  def findUserSubs(userId: Int): Future[List[Subscription]]
 }
 
-object LogSubscriptionRepository extends SubscriptionRepository with LazyLogging {
-  override def save(msg: Subscription): Future[Unit] =
-    Future.successful(logger.info(s"Saving subscription: $msg"))
+trait SubscriptionRepositoryProvider {
+  val subsRepo: SubscriptionRepository
 }
+
+trait LogSubscriptionRepositoryProvider extends SubscriptionRepositoryProvider {
+
+  val subsRepo: SubscriptionRepository = new SubscriptionRepository with LazyLogging {
+    override def save(msg: Subscription): Future[Unit] =
+      Future.successful(logger.info(s"Saving subscription: $msg"))
+
+    override def findUserSubs(userId: Int): Future[List[Subscription]] = ???
+  }
+}
+
+object LogSubscriptionRepositoryProvider extends LogSubscriptionRepositoryProvider

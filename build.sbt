@@ -33,6 +33,7 @@ lazy val `groups-app` = project
       "com.typesafe.akka"          %% "akka-cluster-sharding"   % akkaVersion,
       "com.typesafe.akka"          %% "akka-multi-node-testkit" % akkaVersion,
       "com.typesafe.akka"          %% "akka-http"               % akkaHttpVersion,
+      "com.typesafe.akka"          %% "akka-http-spray-json"    % akkaHttpVersion,
       "com.github.julien-truffaut" %% "monocle-core"            % monocleVersion,
       "com.github.julien-truffaut" %% "monocle-macro"           % monocleVersion,
       "com.typesafe.scala-logging" %% "scala-logging"           % "3.9.2",

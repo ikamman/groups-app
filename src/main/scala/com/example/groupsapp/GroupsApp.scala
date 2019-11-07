@@ -1,13 +1,15 @@
 package com.example.groupsapp
 
 import akka.actor.ActorSystem
-import com.example.groupsapp.group.GroupSharding
+import com.example.groupsapp.group.{GroupSharding, LogSubscriptionRepositoryProvider}
 import com.example.groupsapp.web.WebApp
 import com.typesafe.config.ConfigFactory
+import com.typesafe.scalalogging.LazyLogging
 
-object GroupsApp {
+object GroupsApp extends LazyLogging {
 
   def main(args: Array[String]): Unit = {
+
     if (args.isEmpty) {
       nodesStartup(Seq("2551", "2552", "0"))
     } else {
@@ -21,7 +23,7 @@ object GroupsApp {
       .parseString("akka.cluster.roles=[\"web\"]")
       .withFallback(ConfigFactory.load())
     val system = ActorSystem("GroupsSystem", config)
-    WebApp.startServer("127.0.0.1", 8080, system)
+    new WebApp(system).startServer("127.0.0.1", 8080, system)
   }
 
   def nodesStartup(ports: Seq[String]): Unit = {
@@ -32,9 +34,9 @@ object GroupsApp {
           ConfigFactory.parseString("akka.cluster.roles=[\"group\"]")
         )
         .withFallback(ConfigFactory.load())
-      val system = ActorSystem("GroupsSystem", config)
+      implicit val system: ActorSystem = ActorSystem("GroupsSystem", config)
 
-      system.actorOf(GroupSharding.props)
+      GroupSharding.start(LogSubscriptionRepositoryProvider.subsRepo)
     }
   }
 }

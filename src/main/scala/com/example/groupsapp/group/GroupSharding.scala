@@ -2,35 +2,30 @@ package com.example.groupsapp.group
 
 import akka.actor._
 import akka.cluster.sharding._
-import com.example.groupsapp.group.Group.GroupCommand
+import com.example.groupsapp.group.Group.{JoinGroup, PostMessage}
 
 object GroupSharding {
-  def props: Props = Props(new GroupSharding)
-}
-
-class GroupSharding extends Actor with ActorLogging {
-
-  private val extractEntityId: ShardRegion.ExtractEntityId = {
-    case msg: GroupCommand => (msg.groupId.toString, msg)
-  }
 
   private val numberOfShards = 100
 
-  private val extractShardId: ShardRegion.ExtractShardId = {
-    case cmd: GroupCommand => (cmd.groupId % numberOfShards).toString
+  val extractShardId: ShardRegion.ExtractShardId = {
+    case JoinGroup(id, _, _)         => (id % numberOfShards).toString
+    case PostMessage(id, _, _)       => (id % numberOfShards).toString
+    case ShardRegion.StartEntity(id) =>
+      // StartEntity is used by remembering entities feature
+      (id.toLong % numberOfShards).toString
   }
 
-  val groupRegion: ActorRef = ClusterSharding(context.system).start(
+  val extractEntityId: ShardRegion.ExtractEntityId = {
+    case msg @ JoinGroup(id, _, _)   ⇒ (id.toString, msg)
+    case msg @ PostMessage(id, _, _) => (id.toString, msg)
+  }
+
+  def start(subsRepo: SubscriptionRepository)(implicit system: ActorSystem): ActorRef = ClusterSharding(system).start(
     typeName = "Group",
-    entityProps = Props(new Group(LogFeedRepository, LogSubscriptionRepository)),
-    settings = ClusterShardingSettings(context.system).withRole("group"),
+    entityProps = Props(new Group(LogFeedRepository, subsRepo)),
+    settings = ClusterShardingSettings(system).withRole("group"),
     extractEntityId = extractEntityId,
     extractShardId = extractShardId
   )
-
-  def receive = {
-    case msg: GroupCommand =>
-      log.info(s"Sending $msg");
-      groupRegion ! msg
-  }
 }
