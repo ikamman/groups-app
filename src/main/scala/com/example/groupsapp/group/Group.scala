@@ -7,7 +7,7 @@ import monocle.macros.syntax.lens._
 
 object Group {
 
-  case class Message(id: String, groupId: Int, userId: Int, userName: String, message: String, created: Long)
+  case class GroupMessage(id: String, groupId: Int, userId: Int, userName: String, message: String, created: Long)
   case class Subscription(groupId: Int, userId: Int, userName: String)
 
   // Commands
@@ -46,7 +46,7 @@ class Group(feedRepo: FeedRepository, subsRepo: SubscriptionRepository) extends 
     case PostMessage(groupId, userId, message) =>
       if (isMember(userId, state)) {
         val timestamp = System.currentTimeMillis()
-        val messageToSend = Message(
+        val messageToSend = GroupMessage(
           s"$groupId$userId$timestamp",
           groupId,
           userId,

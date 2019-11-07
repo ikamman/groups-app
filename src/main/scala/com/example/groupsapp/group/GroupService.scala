@@ -29,13 +29,13 @@ trait GroupService extends SubscriptionRepositoryProvider with FeedRepositoryPro
   def sendMessage(groupId: Int, userId: Int, msg: String): Future[Reply] =
     (groupRegionProxy ? PostMessage(groupId, userId, msg)).map(_.asInstanceOf[Reply])
 
-  def getLast20Posts(userId: Int, groupId: Int): Future[List[Group.Message]] =
+  def getLast20Posts(userId: Int, groupId: Int): Future[List[Group.GroupMessage]] =
     for {
       isMember <- subsRepo.memberOf(userId, groupId)
       list     <- feedRepo.findNByGroupId(groupId, 20) if isMember
     } yield list.sortBy(_.created)
 
-  def getLast20PostsAllFeeds(userId: Int): Future[List[Group.Message]] =
-    feedRepo.findNByAllUserGroups(userId, 50).map(_.sortBy(_.created))
+  def getLast20PostsAllFeeds(userId: Int): Future[List[Group.GroupMessage]] =
+    feedRepo.findNByAllUserGroups(userId, 20).map(_.sortBy(_.created))
 
 }

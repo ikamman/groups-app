@@ -1,18 +1,18 @@
 package com.example.groupsapp.group
 
 import com.example.groupsapp.DbProvider
-import com.example.groupsapp.group.Group.{Message, Subscription}
+import com.example.groupsapp.group.Group.{GroupMessage, Subscription}
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.concurrent.Future
 import scala.util.Try
 
 trait FeedRepository {
-  def save(msg: Message): Future[Unit]
-  def findNByGroupId(groupId: Int, limit: Int): Future[List[Message]]
-  def findNByGroupIdSince(groupId: Int, since: Long, limit: Int): Future[List[Message]]
-  def findNByAllUserGroups(userId: Int, limit: Int): Future[List[Message]]
-  def findNByAllUserGroupsSince(userId: Int, since: Long, limit: Int): Future[List[Message]]
+  def save(msg: GroupMessage): Future[Unit]
+  def findNByGroupId(groupId: Int, limit: Int): Future[List[GroupMessage]]
+  def findNByGroupIdSince(groupId: Int, since: Long, limit: Int): Future[List[GroupMessage]]
+  def findNByAllUserGroups(userId: Int, limit: Int): Future[List[GroupMessage]]
+  def findNByAllUserGroupsSince(userId: Int, since: Long, limit: Int): Future[List[GroupMessage]]
 }
 
 trait FeedRepositoryProvider {
@@ -25,37 +25,54 @@ trait DefaultFeedRepositoryProvider extends FeedRepositoryProvider with DbProvid
 
   override val feedRepo: FeedRepository = new FeedRepository {
 
-    override def save(msg: Message): Future[Unit] =
+    override def save(msg: GroupMessage): Future[Unit] =
       Future.fromTry(Try {
         ctx.run(quote {
-          query[Message].insert(lift(msg))
+          query[GroupMessage].insert(lift(msg))
         })
       })
 
-    override def findNByGroupId(groupId: Int, limit: Int): Future[List[Message]] =
-      findNByGroupIdSince(groupId, 0, limit)
-
-    override def findNByGroupIdSince(groupId: Int, since: Long, limit: Int): Future[List[Message]] =
+    override def findNByGroupId(groupId: Int, limit: Int): Future[List[GroupMessage]] =
       Future
         .fromTry(Try {
           ctx.run(quote {
-            query[Message]
+            query[GroupMessage]
               .filter(_.groupId == lift(groupId))
-              .filter(_.created > lift(since))
+              .sortBy(_.created)(Ord.desc)
+              .take(lift(limit))
+          })
+        })
+    override def findNByGroupIdSince(groupId: Int, since: Long, limit: Int): Future[List[GroupMessage]] =
+      Future
+        .fromTry(Try {
+          ctx.run(quote {
+            query[GroupMessage]
+              .filter(_.groupId == lift(groupId))
+              .filter(_.created < lift(since))
               .sortBy(_.created)(Ord.desc)
               .take(lift(limit))
           })
         })
 
-    override def findNByAllUserGroups(userId: Int, limit: Int): Future[List[Message]] =
-      findNByAllUserGroupsSince(userId, 0, limit)
-
-    override def findNByAllUserGroupsSince(userId: Int, since: Long, limit: Int): Future[List[Message]] =
+    override def findNByAllUserGroups(userId: Int, limit: Int): Future[List[GroupMessage]] =
       Future
         .fromTry(Try {
           ctx.run(quote {
-            query[Message]
-              .filter(_.created > lift(since))
+            query[GroupMessage]
+              .join(query[Subscription].filter(_.userId == lift(userId)))
+              .on(_.groupId == _.groupId)
+              .map(_._1)
+              .sortBy(_.created)(Ord.desc)
+              .take(lift(limit))
+          })
+        })
+
+    override def findNByAllUserGroupsSince(userId: Int, since: Long, limit: Int): Future[List[GroupMessage]] =
+      Future
+        .fromTry(Try {
+          ctx.run(quote {
+            query[GroupMessage]
+              .filter(_.created < lift(since))
               .join(query[Subscription].filter(_.userId == lift(userId)))
               .on(_.groupId == _.groupId)
               .map(_._1)

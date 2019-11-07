@@ -52,11 +52,24 @@ GET /user/1/feeds
 
 Stream to feed posts
 ```
-WS /user/1/feed/1/stream
+GET /user/1/feed/1/stream
 ```
 
 Stream to all feeds posts
 ```
-WS /user/1/feeds/stream
+GET /user/1/feeds/stream
 ```
 
+### Large volume handling
+
+In term of large volume handling we can change in memory database to ex. Cassandra which can be cluster easily, increase number of nodes in the cluster.
+There is no need to return all feed data to the http service. I think only latest posts are necessary and oldest ones we can load progressively.
+On the client side we can keep track of oldest messages for each feed and load older ones if necessary. There are methods in FeedRepository to handle that. 
+We can even keep track of latest messages in feeds by keeping them in the group actors and use only database to fetch older ones.
+In this scenario we can keep fixed memory use for each group.
+Table for feed messages can be divided per group so each group would have separate table to increase performance of fetching old data as well as indexing etc.
+
+
+### At most one delivery
+Probably some changes should be provided to avoid messages lost using distributed PubSub, probably own subscribing model as well as acking and routing.
+   
